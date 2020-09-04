@@ -31,7 +31,6 @@ import static org.gradle.performance.regression.android.IncrementalAndroidTestPr
 class RealLifeAndroidBuildSlowPerformanceTest extends AbstractRealLifeAndroidBuildPerformanceTest {
 
     @Unroll
-    @Ignore('https://github.com/gradle/gradle-private/issues/3113')
     def "clean #tasks on #testProject with clean transforms cache"() {
         given:
         testProject.configure(runner)
