@@ -24,14 +24,13 @@ import org.gradle.performance.results.MeasuredOperationList;
 import org.gradle.profiler.BenchmarkResultCollector;
 import org.gradle.profiler.BuildMutator;
 import org.gradle.profiler.InvocationSettings;
-import org.gradle.profiler.ProfilerFactory;
 import org.gradle.profiler.ScenarioDefinition;
+import org.gradle.profiler.jfr.JfrProfilerFactory;
 import org.gradle.profiler.result.BuildInvocationResult;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -53,10 +52,20 @@ public abstract class AbstractGradleProfilerBuildExperimentRunner implements Bui
         this.flameGraphGenerator = jfrProfileTargetDir == null
             ? ProfilerFlameGraphGenerator.NOOP
             : new JfrFlameGraphGenerator(new File(jfrProfileTargetDir));
-        this.profiler = jfrProfileTargetDir == null
-            ? org.gradle.profiler.Profiler.NONE
-            : ProfilerFactory.of(Arrays.asList("jfr")).createFromOptions(new OptionParser().parse());
+        this.profiler = createProfiler(jfrProfileTargetDir);
         this.resultCollector = resultCollector;
+    }
+
+    private org.gradle.profiler.Profiler createProfiler(String jfrProfileTargetDir) {
+        if (jfrProfileTargetDir == null) {
+            return org.gradle.profiler.Profiler.NONE;
+        } else {
+            OptionParser optionParser = new OptionParser();
+            optionParser.accepts("profiler");
+            JfrProfilerFactory jfrProfilerFactory = new JfrProfilerFactory();
+            jfrProfilerFactory.addOptions(optionParser);
+            return jfrProfilerFactory.createFromOptions(optionParser.parse());
+        }
     }
 
     protected ProfilerFlameGraphGenerator getFlameGraphGenerator() {
