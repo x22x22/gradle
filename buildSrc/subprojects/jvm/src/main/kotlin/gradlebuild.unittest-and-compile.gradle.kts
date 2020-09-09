@@ -196,6 +196,7 @@ fun configureTests() {
     }
 
     tasks.withType<Test>().configureEach {
+        outputs.cacheIf { false }
         filterEnvironmentVariables()
 
         maxParallelForks = project.maxParallelForks
